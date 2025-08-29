@@ -52,7 +52,7 @@ func NotFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
 	jsonx.WriteJSONResponse(w, http.StatusNotFound, apires.Error(http.StatusNotFound, err.Error(), nil))
 }
 
-func UnauthorizedErrorResponse(w http.ResponseWriter, r *http.Request, message string, err error) {
+func UnauthorizedResponse(w http.ResponseWriter, r *http.Request, message string, err error) {
 	l := logger.FromCtx(r.Context())
 	l.Warnw("error response", "message", message, "error", err)
 
@@ -62,6 +62,18 @@ func UnauthorizedErrorResponse(w http.ResponseWriter, r *http.Request, message s
 	}
 
 	jsonx.WriteJSONResponse(w, http.StatusUnauthorized, apires.Error(http.StatusUnauthorized, msg, nil))
+}
+
+func ForbiddenResponse(w http.ResponseWriter, r *http.Request, message string, err error) {
+	l := logger.FromCtx(r.Context())
+	l.Warnw("forbidden response", "message", message, "error", err)
+
+	msg := "forbidden"
+	if message != "" {
+		msg = message
+	}
+
+	jsonx.WriteJSONResponse(w, http.StatusForbidden, apires.Error(http.StatusForbidden, msg, nil))
 }
 
 // ServiceErrReponse is a helper function that translates Service.ErrKind and error to an HTTP response.
@@ -80,7 +92,7 @@ func ServiceErrResponse(w http.ResponseWriter, r *http.Request, errKind service.
 		return
 
 	case errKind == service.ErrUnauthorized:
-		UnauthorizedErrorResponse(w, r, err.Error(), err)
+		UnauthorizedResponse(w, r, err.Error(), err)
 		return
 
 	case errKind == service.ErrConflict:
