@@ -11,19 +11,19 @@ type Cursor struct {
 	Limit  *int    `query:"limit" schema:"limit" json:"limit,omitempty"`
 }
 
-func (c *Cursor) Validate(maxLimit, defaultLimit int) error {
-	if c.Limit == nil || (c.Limit != nil && *c.Limit <= 0) {
-		c.Limit = &defaultLimit
+func (cursor *Cursor) Validate(maxLimit, defaultLimit int) error {
+	if cursor.Limit == nil || (cursor.Limit != nil && *cursor.Limit <= 0) {
+		cursor.Limit = &defaultLimit
 	}
 
-	if *c.Limit > maxLimit {
-		c.Limit = &maxLimit
+	if *cursor.Limit > maxLimit {
+		cursor.Limit = &maxLimit
 	}
 
 	var errs service.InputValidationErrors
 
-	if c.After != nil && c.Before != nil {
-		errs.Add(apires.NewApiError("Invalid cursor", "Cannot have both 'after' and 'before' set", "cursor", c))
+	if cursor.AfterIsValid() && cursor.BeforeIsValid() {
+		errs.Add(apires.NewApiError("Invalid cursor", "Cannot have both 'after' and 'before' set", "cursor", cursor))
 	}
 
 	if len(errs) > 0 {
@@ -31,4 +31,12 @@ func (c *Cursor) Validate(maxLimit, defaultLimit int) error {
 	}
 
 	return nil
+}
+
+func (cursor *Cursor) AfterIsValid() bool {
+	return cursor.After != nil && *cursor.After != ""
+}
+
+func (cursor *Cursor) BeforeIsValid() bool {
+	return cursor.Before != nil && *cursor.Before != ""
 }
